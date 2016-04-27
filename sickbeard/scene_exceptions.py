@@ -70,7 +70,7 @@ def setLastRefresh(exList):
     )
 
 
-def get_scene_exceptions(indexer_id, season=-1):
+def get_scene_exceptions(indexer_id, indexer=1, season=-1):
     """
     Given a indexer_id, return a list of all the scene exceptions.
     """
@@ -80,8 +80,17 @@ def get_scene_exceptions(indexer_id, season=-1):
 
     if indexer_id not in exceptionsCache or season not in exceptionsCache[indexer_id]:
         cache_db_con = db.DBConnection('cache.db')
-        exceptions = cache_db_con.select("SELECT show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?",
-                                         [mapped_indexer_id or indexer_id, season])
+        exceptions = []
+        exceptions = cache_db_con.select("SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?",
+                                                [mapped_indexer_id or indexer_id, season])
+
+        exceptions_unmapped = cache_db_con.select("SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and indexer = ? and season = ?",
+                                                  [indexer_id, indexer, season])
+
+        for exception in exceptions_unmapped:
+            if exception['exception_id'] not in [ex['exception_id'] for ex in exceptions]:
+                exceptions.append(exception)
+
         if exceptions:
             exceptionsList = list({cur_exception["show_name"] for cur_exception in exceptions})
 
@@ -264,12 +273,12 @@ def retrieve_exceptions():  # pylint:disable=too-many-locals, too-many-branches
     xem_exception_dict.clear()
 
 
-def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
+def update_scene_exceptions(indexer_id, scene_exceptions, indexer=1, season=-1):
     """
     Given a indexer_id, and a list of all show scene exceptions, update the db.
     """
     cache_db_con = db.DBConnection('cache.db')
-    cache_db_con.action('DELETE FROM scene_exceptions WHERE indexer_id=? and season=?', [indexer_id, season])
+    cache_db_con.action('DELETE FROM scene_exceptions WHERE indexer_id=? and indexer=? and season=?', [indexer_id, indexer, season])
 
     logger.log(u"Updating scene exceptions", logger.INFO)
 
@@ -279,8 +288,8 @@ def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
         exceptionsCache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
 
     for cur_exception in [se.decode('utf-8') for se in scene_exceptions]:
-        cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)",
-                            [indexer_id, cur_exception, season])
+        cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, indexer, show_name, season) VALUES (?,?,?,?)",
+                            [indexer_id, indexer, cur_exception, season])
 
 
 def _anidb_exceptions_fetcher():
