@@ -76,4 +76,4 @@ class indexerApi(object):
     @property
     def session(self):
         if self.indexerID:
-            return indexerConfig[self.indexerID]['session']
+            return indexerConfig[self.indexerID]['api_params']['session']
