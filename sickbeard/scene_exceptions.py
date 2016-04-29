@@ -82,7 +82,7 @@ def get_scene_exceptions(indexer_id, indexer=1, season=-1):
         cache_db_con = db.DBConnection('cache.db')
         exceptions = []
         exceptions = cache_db_con.select("SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and season = ?",
-                                                [mapped_indexer_id or indexer_id, season])
+                                         [mapped_indexer_id or indexer_id, season])
 
         exceptions_unmapped = cache_db_con.select("SELECT exception_id, show_name FROM scene_exceptions WHERE indexer_id = ? and indexer = ? and season = ?",
                                                   [indexer_id, indexer, season])
@@ -102,7 +102,7 @@ def get_scene_exceptions(indexer_id, indexer=1, season=-1):
 
     # Add generic exceptions regardless of the season if there is no exception for season
     if season != -1 and not exceptionsList:
-        exceptionsList += get_scene_exceptions(indexer_id, season=-1)
+        exceptionsList += get_scene_exceptions(indexer_id, indexer=indexer, season=-1)
 
     return list({exception for exception in exceptionsList})
 

@@ -1057,7 +1057,7 @@ def _check_against_names(nameInQuestion, show, season=-1):
     if season in [-1, 1]:
         showNames = [show.name]
 
-    showNames.extend(sickbeard.scene_exceptions.get_scene_exceptions(show.indexerid, season=season))
+    showNames.extend(sickbeard.scene_exceptions.get_scene_exceptions(show.indexerid, indexer=show.indexer, season=season))
 
     for showName in showNames:
         nameFromList = full_sanitizeSceneName(showName)

@@ -94,7 +94,7 @@ class SceneExceptionTestCase(test.SickbeardTestDBCase):
         """
         Test scene exceptions for Babylon 5
         """
-        self.assertEqual(sorted(scene_exceptions.get_scene_exceptions(70726)), ['Babylon 5', 'Babylon5'])
+        self.assertEqual(sorted(scene_exceptions.get_scene_exceptions(70726, 1)), ['Babylon 5', 'Babylon5'])
 
     def test_scene_ex_by_name(self):
         """
