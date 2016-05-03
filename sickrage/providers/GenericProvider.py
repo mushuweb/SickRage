@@ -1,7 +1,6 @@
 # coding=utf-8
 # This file is part of SickRage.
 #
-
 # Git: https://github.com/PyMedusa/SickRage.git
 #
 # SickRage is free software: you can redistribute it and/or modify
@@ -180,7 +179,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
             except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u"{}".format(error), logger.DEBUG)
+                logger.log(u'{}'.format(error), logger.DEBUG)
                 continue
 
             show_object = parse_result.show
@@ -398,13 +397,13 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         }
 
         for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            episode_string = show_name + ' '
+            episode_string = show_name + u' '
 
             if episode.show.air_by_date:
-                episode_string += str(episode.airdate).replace('-', ' ')
+                episode_string += unicode(episode.airdate).replace(u'-', u' ')
             elif episode.show.sports:
-                episode_string += str(episode.airdate).replace('-', ' ')
-                episode_string += ('|', ' ')[len(self.proper_strings) > 1]
+                episode_string += unicode(episode.airdate).replace(u'-', u' ')
+                episode_string += (u'|', u' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
             elif episode.show.anime:
                 episode_string += '%02d' % int(episode.scene_absolute_number)
@@ -415,9 +414,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 }
 
             if add_string:
-                episode_string += ' ' + add_string
+                episode_string += u' ' + add_string
 
-            search_string['Episode'].append(episode_string.encode('utf-8').strip())
+            search_string['Episode'].append(episode_string.strip())
 
         return [search_string]
 
@@ -451,15 +450,17 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     def _get_pubdate(self, item):  # pylint: disable=unused-argument,no-self-use
         """
-        Return publish date of the item. If provider doesnt
-        have _get_pubdate function this will be used
+        Return publish date of the item.
+
+        If provider doesnt have _get_pubdate function this will be used
         """
         return None
 
     def _get_hash(self, item):  # pylint: disable=unused-argument,no-self-use
         """
-        Return hash of the item. If provider doesnt
-        have _get_hash function this will be used
+        Return hash of the item.
+
+        If provider doesnt have _get_hash function this will be used
         """
         return None
 
