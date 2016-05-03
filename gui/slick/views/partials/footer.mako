@@ -58,5 +58,5 @@
     <script type="text/javascript" src="${srRoot}/js/core.js?${sbPID}"></script>
     <script type="text/javascript" src="${srRoot}/js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
     <script type="text/javascript" src="${srRoot}/js/browser.js?${sbPID}"></script>
-    <script type="text/javascript" src="${srRoot}/js/ajaxNotifications.js?${sbPID}"></script>
+    <script type="text/javascript" src="${srRoot}/js/wsClient.js?${sbPID}"></script>
 % endif

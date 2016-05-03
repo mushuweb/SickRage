@@ -1,4 +1,4 @@
-var message_url = srRoot + '/ui/get_messages',
+var ws_message_url = srRoot + '/ws/ui',
     test = !1;
 
 PNotify.prototype.options.addclass = 'stack-bottomright';
@@ -23,21 +23,20 @@ function displayPNotify(type, title, message) {
     });
 }
 
-function check_notifications() {
-    if ('visible' == document.visibilityState) {
-        $.getJSON(message_url, function (data) {
-            $.each(data, function (name, data) {
-                displayPNotify(data.type, data.title, data.message);
-            });
-        });
-    }
-    setTimeout(function () {
-        "use strict";
-        check_notifications();
-    }, 3000);
+function ws_check_notifications() {
+    var ws = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + ws_message_url);
+    ws.onmessage = function(evt) {
+        var parsedJson = $.parseJSON(evt.data);
+
+        // Add handling for different kinds of events. For ex: {"event": "notification", "data": {"title": ..}}
+        if (parsedJson.event === 'notification') {
+            displayPNotify(parsedJson.data.type, parsedJson.data.title, parsedJson.data.body);
+        }
+    };
 }
 
 $(document).ready(function(){
-    check_notifications();
+    //check_notifications();
+    ws_check_notifications();
     if(test) displayPNotify('notice', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
 });

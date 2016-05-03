@@ -15,6 +15,7 @@ from tornado.web import Application, StaticFileHandler, RedirectHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.routes import route
+from sickrage.ws import MedusaWebSocketHandler
 
 
 class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
@@ -55,6 +56,9 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
 
         # api v2 root
         self.options['api_v2_root'] = r'%s/api/v2/' % (sickbeard.WEB_ROOT)
+
+        # websocket root
+        self.options['web_socket'] = r'%s/ws' % (sickbeard.WEB_ROOT)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -110,6 +114,11 @@ class SRWebServer(threading.Thread):  # pylint: disable=too-many-instance-attrib
         # Api v2 Handlers
         self.app.add_handlers(".*$", [
             (r'%s/shows(/?.*)' % self.options['api_v2_root'], ShowsHandler),
+        ])
+
+        # Websocket handler
+        self.app.add_handlers(".*$", [
+            (r'%s/ui(/?.*)' % self.options['web_socket'], MedusaWebSocketHandler.WebSocketUIHandler),
         ])
 
         # Static File Handlers
