@@ -19,9 +19,88 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 import sickbeard
+import sys
+import types
 
 from chardet import detect
 from os import name
+
+enc_list = [sys.getfilesystemencoding(), 'utf-8']
+
+
+def sek(function, *args, **kwargs):
+    """
+    :param function:  Function to call
+    :param args:  Arguments for function
+    :param kwargs:  Arguments for function
+    :return: Unicode-converted function output (string, list, tuple, generator)
+    """
+
+    if name == 'nt':
+        result = function(*args, **kwargs)
+    else:
+        result = function(*[to_string(x) if isinstance(x, unicode) else x for x in args], **kwargs)
+
+    if isinstance(result, (str, list, tuple, types.GeneratorType)):
+        return to_unicode(result)
+
+    return result
+
+
+def to_string(var):
+    """
+    Converts Unicode to String
+    :param var: String, List or Tuple to convert
+    :return: Converted result
+    """
+
+    def make_string(value):
+        for encoding in enc_list:
+            try:
+                if isinstance(value, unicode):
+                    return value.encode(encoding)
+                return [x.encode(encoding) if isinstance(x, unicode) else x for x in value]
+            except UnicodeEncodeError:
+                pass
+
+    if isinstance(var, (unicode, list)):
+        return make_string(var)
+
+    if isinstance(var, tuple):
+        return tuple(make_string(var))
+
+    return var
+
+
+def to_unicode(var):
+    """
+    Converts String to Unicode
+    :param var: String, List, Tuple or Generator to convert
+    :return: Converted result
+    """
+
+    def make_unicode(value):
+        for encoding in enc_list:
+            try:
+                if isinstance(value, str):
+                    return unicode(value, encoding)
+                return [unicode(x, encoding) if isinstance(x, str) else x for x in value]
+            except UnicodeDecodeError:
+                pass
+
+    if isinstance(var, (str, list)):
+        return make_unicode(var)
+
+    if isinstance(var, tuple):
+        return tuple(make_unicode(var))
+
+    if isinstance(var, types.GeneratorType):
+        result = []
+        for path, dirs, files in var:
+            result.extend([(make_unicode(path), make_unicode(dirs), make_unicode(files))])
+        return result
+
+    return var
 
 
 def ek(function, *args, **kwargs):

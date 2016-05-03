@@ -18,8 +18,6 @@
     from sickbeard.failed_history import prepareFailedName
     from sickrage.providers.GenericProvider import GenericProvider
     from sickbeard import providers
-
-    from sickrage.helper.encoding import ek
 %>
 <%block name="scripts">
 <script type="text/javascript" src="${srRoot}/js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -323,7 +321,7 @@
                     below_minleech = True
 
                 %>
-                % if any([i for i in episode_history if prepareFailedName(str(hItem["name"])) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and Quality.splitCompositeStatus(i['action']).status == FAILED]):
+                % if any([i for i in episode_history if prepareFailedName(hItem["name"]) in i['resource'] and (hItem['release_group'] == i['provider'] or  hItem['provider'] == i['provider']) and Quality.splitCompositeStatus(i['action']).status == FAILED]):
                     <tr style="text-decoration:line-through;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">
                 % elif any([i for i in episode_history if Quality.splitCompositeStatus(i['action']).status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST) and hItem["name"] in i['resource'] and hItem['provider'] == i['provider']]):
                     <tr style="background-color:#EBC1EA;!important" id="S${season}E${episode} ${hItem["name"]}" class="skipped season-${season} seasonstyle" role="row">

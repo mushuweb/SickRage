@@ -140,7 +140,7 @@
                 <td class="tvShow">
                     <span><a href="${srRoot}/home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)}${('', ' <span class="quality Proper">Proper</span>')['proper' in hItem.actions[0].resource.lower() or 'repack' in hItem.actions[0].resource.lower()]}</a></span>
                 </td>
-                <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
+                <td align="center" provider="${sorted(hItem.actions)[0].provider}">
                     % for cur_action in sorted(hItem.actions):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
                         % if composite.status in [SNATCHED, FAILED]:

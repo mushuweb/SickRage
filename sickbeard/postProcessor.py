@@ -38,7 +38,7 @@ from sickbeard import show_name_helpers
 from sickbeard import failed_history
 from sickbeard.name_parser.parser import NameParser, InvalidNameException, InvalidShowException
 from sickrage.helper.common import remove_extension, replace_extension, subtitle_extensions
-from sickrage.helper.encoding import ek
+from sickrage.helper.encoding import sek, ek
 from sickrage.helper.exceptions import EpisodeNotFoundException, EpisodePostProcessingFailedException, ex
 from sickrage.helper.exceptions import ShowDirectoryNotFoundException
 from sickrage.show.Show import Show
@@ -162,23 +162,22 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         """
         def recursive_glob(treeroot, pattern):
             results = []
-            for base, _, files in os.walk(treeroot):
+            for base, _, files in sek(os.walk, treeroot):
                 goodfiles = fnmatch.filter(files, pattern)
-                results.extend(ek(os.path.join, base, f) for f in goodfiles)
+                results.extend(os.path.join(base, f) for f in goodfiles)
             return results
 
-        if not file_path:
-            return []
-
         # don't confuse glob with chars we didn't mean to use
-        globbable_file_path = ek(helpers.fixGlob, file_path)
+        globbable_file_path = helpers.fixGlob(file_path)
 
         file_path_list = []
 
         extensions_to_delete = []
 
+        subfolders = True
+
         if subfolders:
-            base_name = ek(os.path.basename, globbable_file_path).rpartition('.')[0]
+            base_name = os.path.basename(globbable_file_path).rpartition('.')[0]
         else:
             base_name = globbable_file_path.rpartition('.')[0]
 
@@ -192,13 +191,14 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # subfolders are only checked in show folder, so names will always be exactly alike
         if subfolders:
             # just create the list of all files starting with the basename
-            filelist = recursive_glob(ek(os.path.dirname, globbable_file_path), base_name + '*')
+            filelist = recursive_glob(os.path.dirname(globbable_file_path), base_name + u'*')
         # this is called when PP, so we need to do the filename check case-insensitive
         else:
             filelist = []
 
             # get a list of all the files in the folder
-            checklist = glob.glob(ek(os.path.join, ek(os.path.dirname, globbable_file_path), '*'))
+            glob_path = os.path.join(os.path.dirname(globbable_file_path), u'*')
+            checklist = sek(glob.glob, glob_path)
             # loop through all the files in the folder, and check if they are the same name even when the cases don't match
             for filefound in checklist:
 
@@ -288,7 +288,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # delete the file and any other files which we want to delete
         for cur_file in file_list:
             if ek(os.path.isfile, cur_file):
-                self._log(u"Deleting file " + cur_file, logger.DEBUG)
+                self._log(u"Deleting file %s" % cur_file, logger.DEBUG)
                 # check first the read-only attribute
                 file_attribute = ek(os.stat, cur_file)[0]
                 if not file_attribute & stat.S_IWRITE:
@@ -320,7 +320,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         """
 
         if not action:
-            self._log(u"Must provide an action for the combined file operation", logger.ERROR)
+            self._log(u'Must provide an action for the combined file operation', logger.ERROR)
             return
 
         file_list = [file_path]
@@ -330,54 +330,54 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             file_list = file_list + self.list_associated_files(file_path, subtitles_only=True)
 
         if not file_list:
-            self._log(u"There were no files associated with " + file_path + ", not moving anything", logger.DEBUG)
+            self._log(u'There were no files associated with ' + file_path + u', not moving anything', logger.DEBUG)
             return
 
-        # create base name with file_path (media_file without .extension)
-        old_base_name = file_path.rpartition('.')[0]
-        old_base_name_length = len(old_base_name)
+        # create base name with file_path (video file without extension and without point)
+        old_file_name = sek(os.path.basename, file_path).rpartition(u'.')[0]
 
         # deal with all files
         for cur_file_path in file_list:
 
-            cur_file_name = ek(os.path.basename, cur_file_path)
+            # current file name with extension
+            cur_file_name = sek(os.path.basename, cur_file_path)
 
             # get the extension without .
-            cur_extension = cur_file_path[old_base_name_length + 1:]
+            cur_extension = cur_file_name.replace(old_file_name + u'.', u'')
 
             # check if file have subtitles language
-            if ek(os.path.splitext, cur_extension)[1][1:] in subtitle_extensions:
-                cur_lang = ek(os.path.splitext, cur_extension)[0]
+            if cur_file_name.rpartition(u'.')[2] in subtitle_extensions:
+                cur_lang = cur_extension.rpartition(u'.')[0]
                 if cur_lang:
                     cur_lang = cur_lang.lower()
-                    if cur_lang == 'pt-br':
-                        cur_lang = 'pt-BR'
+                    if cur_lang == u'pt-br':
+                        cur_lang = u'pt-BR'
                     if new_base_name:
-                        cur_extension = cur_lang + ek(os.path.splitext, cur_extension)[1]
+                        cur_extension = cur_lang + u'.' + cur_extension.rpartition(u'.')[2]
                     else:
                         cur_extension = cur_extension.rpartition('.')[2]
 
             # replace .nfo with .nfo-orig to avoid conflicts
-            if cur_extension == 'nfo' and sickbeard.NFO_RENAME is True:
-                cur_extension = 'nfo-orig'
+            if cur_extension == u'nfo' and sickbeard.NFO_RENAME is True:
+                cur_extension = u'nfo-orig'
 
             # If new base name then convert name
             if new_base_name:
-                new_file_name = new_base_name + '.' + cur_extension
+                new_file_name = new_base_name + u'.' + cur_extension
             # if we're not renaming we still want to change extensions sometimes
             else:
                 new_file_name = replace_extension(cur_file_name, cur_extension)
 
-            if sickbeard.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
-                subs_new_path = ek(os.path.join, new_path, sickbeard.SUBTITLES_DIR)
+            if sickbeard.SUBTITLES_DIR and cur_extension.rpartition('.')[2] in subtitle_extensions:
+                subs_new_path = sek(os.path.join, new_path, sickbeard.SUBTITLES_DIR)
                 dir_exists = helpers.makeDir(subs_new_path)
                 if not dir_exists:
-                    logger.log(u"Unable to create subtitles folder " + subs_new_path, logger.ERROR)
+                    logger.log(u'Unable to create subtitles folder ' + subs_new_path, logger.ERROR)
                 else:
                     helpers.chmodAsParent(subs_new_path)
-                new_file_path = ek(os.path.join, subs_new_path, new_file_name)
+                new_file_path = sek(os.path.join, subs_new_path, new_file_name)
             else:
-                new_file_path = ek(os.path.join, new_path, new_file_name)
+                new_file_path = sek(os.path.join, new_path, new_file_name)
 
             action(cur_file_path, new_file_path)
 
@@ -1041,10 +1041,10 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.isFileLocked(self.file_path, False):
             if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.relatedEps):  # pylint: disable=protected-access
-                self._log("Not enough space to continue PP, exiting", logger.WARNING)
+                self._log(u'Not enough space to continue PP, exiting', logger.WARNING)
                 return False
         else:
-            self._log("Unable to determine needed filespace as the source file is locked for access")
+            self._log(u'Unable to determine needed filespace as the source file is locked for access')
 
         # delete the existing file (and company)
         for cur_ep in [ep_obj] + ep_obj.relatedEps:
@@ -1055,7 +1055,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 if cur_ep.location:
                     helpers.delete_empty_folders(ek(os.path.dirname, cur_ep.location), keep_dir=ep_obj.show._location)  # pylint: disable=protected-access
             except (OSError, IOError):
-                raise EpisodePostProcessingFailedException("Unable to delete the existing files")
+                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
 
             # set the status of the episodes
             # for curEp in [ep_obj] + ep_obj.relatedEps:
@@ -1071,7 +1071,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.addFolder(ep_obj.show._location)  # pylint: disable=protected-access
             except (OSError, IOError):
-                raise EpisodePostProcessingFailedException("Unable to create the show directory: " + ep_obj.show._location)  # pylint: disable=protected-access
+                raise EpisodePostProcessingFailedException(u'Unable to create the show directory: ' + ep_obj.show._location)  # pylint: disable=protected-access
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
             ep_obj.show.writeMetadata(True)
@@ -1083,11 +1083,11 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
             with cur_ep.lock:
 
                 if self.release_name:
-                    self._log("Found release name " + self.release_name, logger.DEBUG)
+                    self._log(u'Found release name ' + self.release_name, logger.DEBUG)
                     cur_ep.release_name = self.release_name
                 elif self.file_name:
                     # If we can't get the release name we expect, save the original release name instead
-                    self._log("Using original release name " + self.file_name, logger.DEBUG)
+                    self._log(u'Using original release name ' + self.file_name, logger.DEBUG)
                     cur_ep.release_name = self.file_name
                 else:
                     cur_ep.release_name = ""
@@ -1112,33 +1112,32 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        releaseName = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if releaseName is not None:
-            failed_history.logSuccess(releaseName)
+        release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        if release_name is not None:
+            failed_history.logSuccess(release_name)
         else:
             self._log(u"Couldn't find release in snatch history", logger.WARNING)
 
         # find the destination folder
         try:
             proper_path = ep_obj.proper_path()
-            proper_absolute_path = ek(os.path.join, ep_obj.show.location, proper_path)
-
+            proper_absolute_path = sek(os.path.join, ep_obj.show.location, proper_path)
             dest_path = ek(os.path.dirname, proper_absolute_path)
+
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(
                 u"Unable to post-process an episode if the show dir doesn't exist, quitting")
 
-        self._log(u"Destination folder for this episode: " + dest_path, logger.DEBUG)
+        self._log(u'Destination folder for this episode: ' + dest_path, logger.DEBUG)
 
         # create any folders we need
         helpers.make_dirs(dest_path)
 
         # figure out the base name of the resulting episode file
         if sickbeard.RENAME_EPISODES:
-            orig_extension = self.file_name.rpartition('.')[-1]
-            new_base_name = ek(os.path.basename, proper_path)
-            new_file_name = new_base_name + '.' + orig_extension
-
+            orig_extension = self.file_name.rpartition(u'.')[2]
+            new_base_name = sek(os.path.basename, proper_path)
+            new_file_name = new_base_name + u'.' + orig_extension
         else:
             # if we're not renaming then there's no new base name, we'll just use the existing name
             new_base_name = None

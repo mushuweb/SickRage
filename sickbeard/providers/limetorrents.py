@@ -29,6 +29,7 @@ from sickbeard import logger, tvcache
 from sickbeard.bs4_parser import BS4Parser
 
 from sickrage.helper.common import convert_size, try_int
+from sickrage.helper.encoding import to_string
 from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 
 id_regex = re.compile(r'(?:torrent-([0-9]*).html)', re.I)
@@ -89,7 +90,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         items = self.parse(data, mode)
                         results += items
                 else:
-                    search_url = self.urls['search'].format(query=search_string)
+                    search_url = self.urls['search'].format(query=to_string(search_string))
                     data = self.get_url(search_url, returns='text')
                     items = self.parse(data, mode)
                     results += items

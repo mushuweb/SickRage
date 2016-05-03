@@ -463,18 +463,16 @@ class NameParser(object):
         final_result.quality = self._combine_results(file_name_result, dir_name_result, 'quality')
 
         if not final_result.show:
-            raise InvalidShowException(u"Unable to match {0} to a show in your database. Parser result: {1}".format(
-                                         name, file_name_result or dir_name_result))
+            raise InvalidShowException(u'Unable to match {} to a show in your database'.format(name))
 
         # if there's no useful info in it then raise an exception
         if final_result.season_number is None and not final_result.episode_numbers and final_result.air_date is None and not final_result.ab_episode_numbers and not final_result.series_name:
-            raise InvalidNameException(u"Unable to parse {0} to a valid episode. Parser result: {1}".format(
-                                         name, file_name_result or dir_name_result))
+            raise InvalidNameException(u'Unable to parse {} to a valid episode'.format(name))
 
         if cache_result:
             name_parser_cache.add(name, final_result)
 
-        logger.log(u"Parsed " + name + " into " + str(final_result).decode('utf-8', 'xmlcharrefreplace'), logger.DEBUG)
+        logger.log(u'Parsed {0} into {1}'.format(name, final_result), logger.DEBUG)
         return final_result
 
 
@@ -535,26 +533,26 @@ class ParseResult(object):  # pylint: disable=too-many-instance-attributes
         else:
             to_return = u''
         if self.season_number is not None:
-            to_return += 'S' + str(self.season_number).zfill(2)
+            to_return += u'S' + str(self.season_number).zfill(2)
         if self.episode_numbers:
             for e in self.episode_numbers:
-                to_return += 'E' + str(e).zfill(2)
+                to_return += u'E' + str(e).zfill(2)
 
         if self.is_air_by_date:
             to_return += str(self.air_date)
         if self.ab_episode_numbers:
-            to_return += ' [ABS: ' + str(self.ab_episode_numbers) + ']'
+            to_return += u' [ABS: ' + str(self.ab_episode_numbers) + ']'
         if self.version and self.is_anime is True:
-            to_return += ' [ANIME VER: ' + str(self.version) + ']'
+            to_return += u' [ANIME VER: ' + str(self.version) + ']'
 
         if self.release_group:
-            to_return += ' [GROUP: ' + self.release_group + ']'
+            to_return += u' [GROUP: ' + self.release_group + ']'
 
-        to_return += ' [ABD: ' + str(self.is_air_by_date) + ']'
-        to_return += ' [ANIME: ' + str(self.is_anime) + ']'
-        to_return += ' [whichReg: ' + str(self.which_regex) + ']'
+        to_return += u' [ABD: ' + str(self.is_air_by_date) + ']'
+        to_return += u' [ANIME: ' + str(self.is_anime) + ']'
+        to_return += u' [whichReg: ' + str(self.which_regex) + ']'
 
-        return to_return.encode('utf-8')
+        return to_return
 
     @property
     def is_air_by_date(self):

@@ -29,7 +29,7 @@ from sickbeard.name_parser.parser import NameParser, InvalidNameException, Inval
 from sickbeard import common
 from sickbeard import failedProcessor
 from sickrage.helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
-from sickrage.helper.encoding import ek, ss
+from sickrage.helper.encoding import sek, ek, to_unicode
 from sickrage.helper.exceptions import EpisodePostProcessingFailedException, ex, FailedPostProcessingFailedException
 
 from unrar2 import RarFile
@@ -98,14 +98,13 @@ def delete_folder(folder, check_empty=True):
 
 def delete_files(processPath, notwantedFiles, result, force=False):
     """
-    Remove files from filesystem
+    Remove files from filesystem.
 
     :param processPath: path to process
     :param notwantedFiles: files we do not want
     :param result: Processor results
     :param force: Boolean, force deletion, defaults to false
     """
-
     if not result.result and force:
         result.output += logHelper(u"Forcing deletion of files, even though last result was not success", logger.DEBUG)
     elif not result.result:
@@ -174,20 +173,22 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
     result = ProcessResult()
 
+    dirName = to_unicode(dirName)
+
     # if they passed us a real dir then assume it's the one we want
-    if ek(os.path.isdir, dirName):
-        dirName = ek(os.path.realpath, dirName)
+    if os.path.isdir(dirName):
+        dirName = os.path.realpath(dirName)
         result.output += logHelper(u"Processing folder %s" % dirName, logger.DEBUG)
 
     # if the client and SickRage are not on the same machine translate the directory into a network directory
     elif all([sickbeard.TV_DOWNLOAD_DIR,
-              ek(os.path.isdir, sickbeard.TV_DOWNLOAD_DIR),
-              ek(os.path.normpath, dirName) == ek(os.path.normpath, sickbeard.TV_DOWNLOAD_DIR)]):
-        dirName = ek(os.path.join, sickbeard.TV_DOWNLOAD_DIR, ek(os.path.abspath, dirName).split(os.path.sep)[-1])
+              os.path.isdir(sickbeard.TV_DOWNLOAD_DIR),
+              os.path.normpath(dirName) == os.path.normpath(sickbeard.TV_DOWNLOAD_DIR)]):
+        dirName = os.path.join(sickbeard.TV_DOWNLOAD_DIR, os.path.abspath(dirName).split(os.path.sep)[-1])
         result.output += logHelper(u"Trying to use folder: %s " % dirName, logger.DEBUG)
 
     # if we didn't find a real dir then quit
-    if not ek(os.path.isdir, dirName):
+    if not os.path.isdir(dirName):
         result.output += logHelper(u"Unable to figure out what folder to process. "
                                    u"If your downloader and SickRage aren't on the same PC "
                                    u"make sure you fill out your TV download dir in the config.",
@@ -209,7 +210,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
 
     if not postpone:
         result.output += logHelper(u"PostProcessing Path: %s" % path, logger.INFO)
-        result.output += logHelper(u"PostProcessing Dirs: %s" % str(dirs), logger.DEBUG)
+        result.output += logHelper(u"PostProcessing Dirs: %s" % dirs, logger.DEBUG)
 
         videoFiles = [x for x in files if helpers.isMediaFile(x)]
         rarFiles = [x for x in files if helpers.isRarFile(x)]
@@ -256,7 +257,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
     for curDir in [x for x in dirs if validateDir(path, x, nzbNameOriginal, failed, result)]:
         result.result = True
 
-        for processPath, _, fileList in ek(os.walk, ek(os.path.join, path, curDir), topdown=False):
+        for processPath, _, fileList in sek(os.walk, ek(os.path.join, path, curDir), topdown=False):
 
             if not validateDir(path, processPath, nzbNameOriginal, failed, result):
                 continue
@@ -299,12 +300,12 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     if not(process_method == u"move" and result.result) or (proc_type == u"manual" and not delete_on):
                         continue
 
-                    delete_folder(ek(os.path.join, processPath, u'@eaDir'))
+                    delete_folder(os.path.join(processPath, u'@eaDir'))
                     delete_files(processPath, notwantedFiles, result)
 
                     if all([not sickbeard.NO_DELETE or proc_type == u"manual",
                             process_method == u"move",
-                            ek(os.path.normpath, processPath) != ek(os.path.normpath, sickbeard.TV_DOWNLOAD_DIR)]):
+                            os.path.normpath(processPath) != os.path.normpath(sickbeard.TV_DOWNLOAD_DIR)]):
 
                         if delete_folder(processPath, check_empty=True):
                             result.output += logHelper(u"Deleted folder: %s" % processPath, logger.DEBUG)
@@ -340,14 +341,14 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
     :return: True if dir is valid for processing, False if not
     """
 
-    dirName = ss(dirName)
+    # dirName = ss(dirName)
 
     IGNORED_FOLDERS = [u'.AppleDouble', u'.@__thumb', u'@eaDir']
-    folder_name = ek(os.path.basename, dirName)
+    folder_name = os.path.basename(dirName)
     if folder_name in IGNORED_FOLDERS:
         return False
 
-    result.output += logHelper(u"Processing folder " + dirName, logger.DEBUG)
+    result.output += logHelper(u"Processing folder %s" % dirName, logger.DEBUG)
 
     if folder_name.startswith(u'_FAILED_'):
         result.output += logHelper(u"The directory name indicates it failed to extract.", logger.DEBUG)
@@ -361,11 +362,11 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
         return False
 
     if failed:
-        process_failed(ek(os.path.join, path, dirName), nzbNameOriginal, result)
+        process_failed(os.path.join(path, dirName), nzbNameOriginal, result)
         result.missedfiles.append(u"%s : Failed download" % dirName)
         return False
 
-    if helpers.is_hidden_folder(ek(os.path.join, path, dirName)):
+    if helpers.is_hidden_folder(os.path.join(path, dirName)):
         result.output += logHelper(u"Ignoring hidden folder: %s" % dirName, logger.DEBUG)
         result.missedfiles.append(u"%s : Hidden folder" % dirName)
         return False
@@ -375,8 +376,8 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
     sql_results = main_db_con.select("SELECT location FROM tv_shows")
 
     for sqlShow in sql_results:
-        if dirName.lower().startswith(ek(os.path.realpath, sqlShow["location"]).lower() + os.sep) or \
-                dirName.lower() == ek(os.path.realpath, sqlShow["location"]).lower():
+        if dirName.encode('utf-8').lower().startswith(os.path.realpath(sqlShow["location"].encode('utf-8')).lower() + os.sep) or \
+                dirName.encode('utf-8').lower() == os.path.realpath(sqlShow["location"].encode('utf-8')).lower():
 
             result.output += logHelper(
                 u"Cannot process an episode that's already been moved to its show dir, skipping " + dirName,
@@ -386,7 +387,7 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):  # pylint: disa
     # Get the videofile list for the next checks
     allFiles = []
     allDirs = []
-    for _, processdir, fileList in ek(os.walk, ek(os.path.join, path, dirName), topdown=False):
+    for _, processdir, fileList in sek(os.walk, ek(os.path.join, path, dirName), topdown=False):
         allDirs += processdir
         allFiles += fileList
 
@@ -553,7 +554,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
 
     processor = None
     for cur_video_file in videoFiles:
-        cur_video_file_path = ek(os.path.join, processPath, cur_video_file)
+        cur_video_file_path = os.path.join(processPath, cur_video_file)
 
         if already_postprocessed(processPath, cur_video_file, force, result):
             result.output += logHelper(u"Skipping already processed file: %s" % cur_video_file, logger.DEBUG)
@@ -603,13 +604,13 @@ def get_path_dir_files(dirName, nzbName, proc_type):
 
     if dirName == sickbeard.TV_DOWNLOAD_DIR and not nzbName or proc_type == u"manual":  # Scheduled Post Processing Active
         # Get at first all the subdir in the dirName
-        for path, dirs, files in ek(os.walk, dirName):
+        for path, dirs, files in sek(os.walk, dirName):
             break
     else:
-        path, dirs = ek(os.path.split, dirName)  # Script Post Processing
-        if not (nzbName is None or nzbName.endswith(u'.nzb')) and ek(os.path.isfile, ek(os.path.join, dirName, nzbName)):  # For single torrent file without Dir
+        path, dirs = os.path.split(dirName)  # Script Post Processing
+        if not (nzbName is None or nzbName.endswith(u'.nzb')) and os.path.isfile(os.path.join(dirName, nzbName)):  # For single torrent file without Dir
             dirs = []
-            files = [ek(os.path.join, dirName, nzbName)]
+            files = [os.path.join(dirName, nzbName)]
         else:
             dirs = [dirs]
             files = []

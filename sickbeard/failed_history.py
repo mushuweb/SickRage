@@ -36,11 +36,11 @@ def prepareFailedName(release):
     """Standardizes release name for failed DB"""
 
     fixed = unquote(release)
-    if fixed.endswith(".nzb"):
-        fixed = fixed.rpartition(".")[0]
+    if fixed.endswith(u'.nzb'):
+        fixed = fixed.rpartition(u'.')[0]
 
-    fixed = re.sub(r"[\.\-\+\ ]", "_", fixed)
-    fixed = ss(fixed)
+    fixed = re.sub(r'[\.\-\+\ ]', u'_', fixed)
+    # fixed = ss(fixed)
 
     return fixed
 
