@@ -179,17 +179,6 @@ class SickRage(object):
                 (sys.platform.startswith('win') and sys.getwindowsversion()[0] >= 6 and str(getattr(sys.stdout, 'device', sys.stdout).encoding).lower() in ('cp65001', 'charmap')):
             sickbeard.SYS_ENCODING = 'UTF-8'
 
-        # TODO: Continue working on making this unnecessary, this hack creates all sorts of hellish problems
-        if not hasattr(sys, 'setdefaultencoding'):
-            reload(sys)
-
-        try:
-            # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
-            sys.setdefaultencoding(sickbeard.SYS_ENCODING)  # pylint: disable=no-member
-        except (AttributeError, LookupError):
-            sys.exit('Sorry, you MUST add the Medusa folder to the PYTHONPATH environment variable\n'
-                     'or find another way to force Python to use %s for string encoding.' % sickbeard.SYS_ENCODING)
-
         # Need console logging for SickBeard.py and SickBeard-console.exe
         self.console_logging = (not hasattr(sys, 'frozen')) or (sickbeard.MY_NAME.lower().find('-console') > 0)
 
