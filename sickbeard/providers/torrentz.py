@@ -72,8 +72,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
             for search_string in search_strings[mode]:
                 search_url = self.urls['verified'] if self.confirmed else self.urls['feed']
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format
-                               (search_string.decode("utf-8")), logger.DEBUG)
+                    logger.log(u"Search string: {}".format(search_string), logger.DEBUG)
 
                 data = self.get_url(search_url, params={'q': search_string}, returns='text')
                 if not data:
@@ -107,7 +106,7 @@ class TorrentzProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                                                (title, seeders), logger.DEBUG)
                                 continue
 
-                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
+                            result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': t_hash}
                             items.append(result)
                 except StandardError:
                     logger.log(u"Failed parsing provider. Traceback: %r" % traceback.format_exc(), logger.ERROR)

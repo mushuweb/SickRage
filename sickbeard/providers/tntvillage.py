@@ -279,7 +279,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         if not self.login():
             return results
 
-        self.categories = "cat=" + str(self.cat)
+        self.categories = u"cat=" + unicode(self.cat)
 
         for mode in search_params:
             items = []
@@ -295,7 +295,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if search_string == '':
                     continue
 
-                search_string = str(search_string).replace('.', ' ')
+                search_string = search_string.replace(u'.', u' ')
 
                 for x in range(0, y):
                     z = x * 20
@@ -303,13 +303,12 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         break
 
                     if mode != 'RSS':
-                        search_url = (self.urls['search_page'] + '&filter={2}').format(z, self.categories, search_string)
+                        search_url = (self.urls['search_page'] + u'&filter={2}').format(z, self.categories, search_string)
                     else:
                         search_url = self.urls['search_page'].format(z, self.categories)
 
                     if mode != 'RSS':
-                        logger.log(u"Search string: {}".format
-                                   (search_string.decode("utf-8")), logger.DEBUG)
+                        logger.log(u"Search string: {}".format(search_string), logger.DEBUG)
 
                     data = self.get_url(search_url, returns='text')
                     if not data:
@@ -386,7 +385,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                                    (title, seeders), logger.DEBUG)
                                     continue
 
-                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                                item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                                 if mode != 'RSS':
                                     logger.log(u"Found result: %s with %s seeders and %s leechers" % (title, seeders, leechers), logger.DEBUG)
 

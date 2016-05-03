@@ -23,7 +23,6 @@ from __future__ import unicode_literals
 import datetime
 import time
 
-import sickbeard
 from sickbeard import logger, tvcache
 from sickbeard.indexers.indexer_config import INDEXER_TVDB
 
@@ -115,8 +114,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             for search_string in search_strings[mode]:
                 if mode != "RSS":
                     search_params["search_string"] = search_string
-                    logger.log("Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log("Search string: {}".format(search_string), logger.DEBUG)
 
                 # Check if token is still valid before search
                 if not self.login():
@@ -168,7 +166,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                             logger.log("Found result: {0} with {1} seeders and {2} leechers".format
                                        (title, seeders, leechers), logger.DEBUG)
 
-                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        result = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers}
                         items.append(result)
                     except StandardError:
                         continue

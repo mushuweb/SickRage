@@ -20,8 +20,6 @@
 
 from __future__ import unicode_literals
 
-import validators
-
 from sickbeard import logger, tvcache
 
 from sickrage.helper.common import convert_size
@@ -31,13 +29,13 @@ from sickrage.providers.torrent.TorrentProvider import TorrentProvider
 class BTDiggProvider(TorrentProvider):
 
     def __init__(self):
-        
+
         # Provider Init
         TorrentProvider.__init__(self, "BTDigg")
 
         self.public = True
-        
-         # Torrent Stats
+
+        # Torrent Stats
         self.minseed = None
         self.minleech = None
 
@@ -65,8 +63,7 @@ class BTDiggProvider(TorrentProvider):
                 search_params["q"] = search_string
                 if mode != "RSS":
                     search_params["order"] = 0
-                    logger.log("Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log("Search string: {}".format(search_string), logger.DEBUG)
                 else:
                     search_params["order"] = 2
                 if self.custom_url:
@@ -110,7 +107,7 @@ class BTDiggProvider(TorrentProvider):
                         torrent_size = torrent.pop("size")
                         size = convert_size(torrent_size) or -1
 
-                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': None}
+                        item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': None}
                         if mode != "RSS":
                             logger.log("Found result: %s " % title, logger.DEBUG)
 

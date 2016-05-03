@@ -1,6 +1,7 @@
 # coding=utf-8
 # Author: Gonçalo M. (aka duramato/supergonkas) <supergonkas@gmail.com>
 #
+
 #
 # This file is part of SickRage.
 #
@@ -68,8 +69,7 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log(u"Search string: {}".format(search_string.decode("utf-8")),
-                               logger.DEBUG)
+                    logger.log(u"Search string: {}".format(search_string), logger.DEBUG)
 
                 search_params['s'] = search_string
 
@@ -103,13 +103,33 @@ class TorrentProjectProvider(TorrentProvider):  # pylint: disable=too-many-insta
                     t_hash = torrents[i].get("torrent_hash")
                     torrent_size = torrents[i].get("torrent_size")
                     size = convert_size(torrent_size) or -1
-                    download_url = torrents[i].get("magnet") + self._custom_trackers
-                    pubdate = '' #TBA
+
+                    try:
+                        assert seeders < 10
+                        assert mode != 'RSS'
+                        logger.log(u"Torrent has less than 10 seeds getting dyn trackers: " + title, logger.DEBUG)
+
+                        if self.custom_url:
+                            if not validators.url(self.custom_url):
+                                logger.log("Invalid custom url set, please check your settings", logger.WARNING)
+                                return results
+                            trackers_url = self.custom_url
+                        else:
+                            trackers_url = self.url
+
+                        trackers_url = urljoin(trackers_url, t_hash)
+                        trackers_url = urljoin(trackers_url, "/trackers_json")
+                        jdata = self.get_url(trackers_url, returns='json')
+
+                        assert jdata != "maintenance"
+                        download_url = "magnet:?xt=urn:btih:" + t_hash + "&dn=" + title + "".join(["&tr=" + s for s in jdata])
+                    except (Exception, AssertionError):
+                        download_url = "magnet:?xt=urn:btih:" + t_hash + "&dn=" + title + self._custom_trackers
 
                     if not all([title, download_url]):
                         continue
 
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'pubdate': None, 'hash': t_hash}
+                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders, 'leechers': leechers, 'hash': t_hash}
 
                     if mode != 'RSS':
                         logger.log(u"Found result: {0} with {1} seeders and {2} leechers".format
