@@ -167,6 +167,9 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
                 results.extend(os.path.join(base, f) for f in goodfiles)
             return results
 
+        if not file_path:
+            return []
+
         # don't confuse glob with chars we didn't mean to use
         globbable_file_path = helpers.fixGlob(file_path)
 
@@ -174,7 +177,7 @@ class PostProcessor(object):  # pylint: disable=too-many-instance-attributes
 
         extensions_to_delete = []
 
-        subfolders = True
+        # subfolders = True
 
         if subfolders:
             base_name = os.path.basename(globbable_file_path).rpartition('.')[0]
