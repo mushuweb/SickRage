@@ -552,7 +552,7 @@ EMBEDDED_SUBTITLES_ALL = False
 EMBEDDED_SUBTITLES_UNKNOWN_LANG = False
 SUBTITLES_STOP_AT_FIRST = False
 SUBTITLES_HEARING_IMPAIRED = False
-SUBTITLES_FINDER_FREQUENCY = 1
+SUBTITLES_FINDER_FREQUENCY = 30
 SUBTITLES_MULTI = False
 SUBTITLES_EXTRA_SCRIPTS = []
 SUBTITLES_PRE_SCRIPTS = []
@@ -1218,7 +1218,12 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SUBTITLES_STOP_AT_FIRST = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_stop_at_first', 0))
         EMBEDDED_SUBTITLES_UNKNOWN_LANG = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_unknown_lang', 0))
         SUBTITLES_HEARING_IMPAIRED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_hearing_impaired', 0))
-        SUBTITLES_FINDER_FREQUENCY = check_setting_int(CFG, 'Subtitles', 'subtitles_finder_frequency', 1)
+        SUBTITLES_FINDER_FREQUENCY = check_setting_int(CFG, 'Subtitles', 'subtitles_finder_frequency', 30)
+
+        # Convert old frequency value (in hours) to minutes
+        if SUBTITLES_FINDER_FREQUENCY < 30:
+            SUBTITLES_FINDER_FREQUENCY = SUBTITLES_FINDER_FREQUENCY * 60
+
         SUBTITLES_MULTI = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_multi', 1))
         SUBTITLES_DOWNLOAD_IN_PP = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_download_in_pp', 0))
         SUBTITLES_KEEP_ONLY_WANTED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_keep_only_wanted', 0))
@@ -1453,7 +1458,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                     run_delay=update_interval,
                                                     silent=not USE_TRAKT)
 
-        update_interval = datetime.timedelta(hours=SUBTITLES_FINDER_FREQUENCY)
+        update_interval = datetime.timedelta(minutes=SUBTITLES_FINDER_FREQUENCY)
         subtitlesFinderScheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                        cycleTime=update_interval,
                                                        threadName="FINDSUBTITLES",
