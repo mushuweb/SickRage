@@ -82,8 +82,8 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Find Frequency</span>
-                                        <input type="number" name="subtitles_finder_frequency" value="${sickbeard.SUBTITLES_FINDER_FREQUENCY}" hours="1" min="1" step="1" class="form-control input-sm input75" />
-                                        <span class="component-desc">time in hours between scans (default: 1)</span>
+                                        <input type="number" name="subtitles_finder_frequency" value="${sickbeard.SUBTITLES_FINDER_FREQUENCY}" min="30" step="1" class="form-control input-sm input75" />
+                                        <span class="component-desc">time in minutes between scans (default: 30)</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
