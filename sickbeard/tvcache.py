@@ -185,8 +185,8 @@ class TVCache(object):
 
     def updateCache(self):
         # check if we should update
-        if not self.shouldUpdate():
-            return
+        # if not self.shouldUpdate():
+        #     return
 
         try:
             data = self._getRSSData()
