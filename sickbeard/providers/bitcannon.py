@@ -53,94 +53,54 @@ class BitCannonProvider(TorrentProvider):
         # Cache
         self.cache = tvcache.TVCache(self, search_params={'RSS': ['tv', 'anime']})
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
-        """
-        BitCannon search and parsing
-
-        :param search_string: A dict with mode (key) and the search value (value)
-        :param age: Not used
-        :param ep_obj: Not used
-        :returns: A list of search results (structure)
-        """
+    def _doSearch(self, search_strings, search_mode='eponly', epcount=0, age=0, epObj=None):
         results = []
-        url = 'http://localhost:3000/'
+        items = {'Season': [], 'Episode': [], 'RSS': []}
+
+        trackers = (self.getURL(self.urls['trackers'], json=True) or {}).get(u'Trackers', [])
+        if not trackers:
+            logger.log(u'Could not get tracker list from BitCannon, aborting search')
+        url = 'http://127.0.0.1:1337/'
         if self.custom_url:
             if not validators.url(self.custom_url):
                 logger.log('Invalid custom url set, please check your settings', logger.WARNING)
                 return results
             url = self.custom_url
-
-        # Search Params
-        search_params = {
-            'category': 'anime' if ep_obj and ep_obj.show and ep_obj.show.anime else 'tv',
-            'apiKey': self.api_key
-        }
-
-        for mode in search_strings:
-            items = []
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
-
+        for mode in search_strings.keys():
+            logger.log(u"Search Mode: %s" % mode, logger.DEBUG)
             for search_string in search_strings[mode]:
-                search_params['q'] = search_string
-                if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
-
-                search_url = urljoin(url, 'api/search')
-                parsed_json = self.get_url(search_url, params=search_params, returns='json')
-                if not parsed_json:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    continue
-
-                if not self._check_auth_from_data(parsed_json):
-                    return results
-
-                for result in parsed_json.pop('torrents', {}):
-                    try:
-                        title = result.pop('title', '')
-
-                        info_hash = result.pop('infoHash', '')
-                        download_url = 'magnet:?xt=urn:btih:' + info_hash
-                        if not all([title, download_url, info_hash]):
-                            continue
-
-                        swarm = result.pop('swarm', None)
-                        if swarm:
-                            seeders = try_int(swarm.pop('seeders', 0))
-                            leechers = try_int(swarm.pop('leechers', 0))
-                        else:
-                            seeders = leechers = 0
-
-                        # Filter unseeded torrent
-                        if seeders < min(self.minseed, 1):
-                            if mode != 'RSS':
-                                logger.log("Discarding torrent because it doesn't meet the "
-                                           "minimum seeders: {0}. Seeders: {1}".format
-                                           (title, seeders), logger.DEBUG)
-                            continue
-
-                        size = convert_size(result.pop('size', -1)) or -1
-
-                        item = {
-                            'title': title,
-                            'link': download_url,
-                            'size': size,
-                            'seeders': seeders,
-                            'leechers': leechers,
-                            'pubdate': None,
-                            'hash': None
-                        }
-                        if mode != 'RSS':
-                            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                       (title, seeders, leechers), logger.DEBUG)
-
-                        items.append(item)
-                    except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                        logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                   (traceback.format_exc()), logger.ERROR)
+                logger.log(u"Search URL: %s" % searchURL, logger.DEBUG)
+                data = self.getURL(url, json=True)
+                for item in data or []:
+                    title = item.get(u'Title', u'')
+                    info_hash = item.get(u'Btih', u'')
+                    if not all([title, info_hash]):
                         continue
 
-            results += items
+                    swarm = item.get(u'Swarm', {})
+                    seeders = swarm.get(u'Seeders', 0)
+                    leechers = swarm.get(u'Leechers', 0)
+                    size = item.get(u'Size', -1)
+
+                    #Filter unseeded torrent
+                    if seeders < self.minseed or leechers < self.minleech:
+                        if mode != 'RSS':
+                            logger.log(u"Discarding torrent because it doesn't meet the minimum seeders or leechers: {0} (S:{1} L:{2})".format(title, seeders, leechers), logger.DEBUG)
+                        continue
+
+                    # Only build the url if we selected it
+                    download_url = 'magnet:?xt=urn:btih:{0}&dn={1}&tr={2}'.format(info_hash, title, self.trackers)
+
+                    item = title, download_url, size, seeders, leechers
+                    if mode != 'RSS':
+                        logger.log(u"Found result: %s " % title, logger.DEBUG)
+
+                    items[mode].append(item)
+
+            #For each search mode sort all the items by seeders if available
+            items[mode].sort(key=lambda tup: tup[3], reverse=True)
+
+            results += items[mode]
 
         return results
 
