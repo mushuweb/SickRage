@@ -63,6 +63,9 @@ from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.show.Show import Show
 
+from cachecontrol import CacheControlAdapter
+from cachecontrol.cache import DictCache
+
 try:
     import urllib
     urllib._urlopener = classes.SickBeardURLopener()
@@ -1380,12 +1383,24 @@ def _getTempDir():
     return ek(os.path.join, tempfile.gettempdir(), "sickrage-%s" % uid)
 
 
-def make_session():
+def make_session(cache_etags=True, serializer=None, heuristic=None):
     session = requests.Session()
+
+    adapter = CacheControlAdapter(
+        DictCache(),
+        cache_etags=cache_etags,
+        serializer=serializer,
+        heuristic=heuristic,
+    )
+
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    session.cache_controller = adapter.controller
 
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
-    return CacheControl(sess=session, cache_etags=True)
+    return session
 
 
 def request_defaults(kwargs):
