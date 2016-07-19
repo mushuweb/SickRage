@@ -17,7 +17,7 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import sys
 import os
@@ -47,7 +47,6 @@ class EpisodesApi(object):
 
     def episodes_id_get(self, id, **kwargs):
         """
-        
         Returns the full information for a given episode id.
 
         This method makes a synchronous HTTP request by default. To make an

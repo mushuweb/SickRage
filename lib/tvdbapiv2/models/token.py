@@ -37,7 +37,7 @@ class Token(object):
                                   and the value is json key in definition.
         """
         self.swagger_types = {
-            'token': 'str'
+            'token': 'unicode'
         }
 
         self.attribute_map = {
@@ -53,7 +53,7 @@ class Token(object):
 
 
         :return: The token of this Token.
-        :rtype: str
+        :rtype: unicode
         """
         return self._token
 
@@ -64,7 +64,7 @@ class Token(object):
 
 
         :param token: The token of this Token.
-        :type: str
+        :type: unicode
         """
         self._token = token
 
@@ -100,14 +100,14 @@ class Token(object):
         """
         return self.to_str()
 
-    def __eq__(self, other): 
+    def __eq__(self, other):
         """
         Returns true if both objects are equal
         """
         return self.__dict__ == other.__dict__
 
     def __ne__(self, other):
-        """ 
+        """
         Returns true if both objects are not equal
         """
         return not self == other

@@ -18,7 +18,8 @@ Copyright 2015 SmartBear Software
    ref: https://github.com/swagger-api/swagger-codegen
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
+
 from . import models
 from .rest import RESTClientObject
 from .rest import ApiException
@@ -230,6 +231,7 @@ class ApiClient(object):
         """
         # handle file downloading
         # save response body into a tmp file and return the instance
+        response_type = response_type
         if "file" == response_type:
             return self.__deserialize_file(response)
 
@@ -253,7 +255,7 @@ class ApiClient(object):
         if data is None:
             return None
 
-        if type(klass) == str:
+        if type(klass) in (str, unicode):
             if klass.startswith('list['):
                 sub_kls = re.match('list\[(.*)\]', klass).group(1)
                 return [self.__deserialize(sub_data, sub_kls)
@@ -267,13 +269,13 @@ class ApiClient(object):
             # convert str to class
             # for native types
             if klass in ['int', 'float', 'str', 'bool',
-                         "date", 'datetime', "object"]:
+                         'date', 'datetime', 'object', 'unicode']:
                 klass = eval(klass)
             # for model types
             else:
                 klass = eval('models.' + klass)
 
-        if klass in [int, float, str, bool]:
+        if klass in [int, float, str, bool, unicode]:
             return self.__deserialize_primitive(data, klass)
         elif klass == object:
             return self.__deserialize_object(data)
@@ -507,6 +509,8 @@ class ApiClient(object):
             value = unicode(data)
         except TypeError:
             value = data
+        except ValueError:
+            pass
         return value
 
     def __deserialize_object(self, value):
@@ -566,7 +570,6 @@ class ApiClient(object):
         :return: model object.
         """
         instance = klass()
-        #data = data.get('data') if isinstance(data.get('data'), (dict, list)) else data
 
         for attr, attr_type in iteritems(instance.swagger_types):
             if data is not None \

@@ -18,7 +18,7 @@ Copyright 2015 SmartBear Software
 Credit: this file (rest.py) is modified based on rest.py in Dropbox Python SDK:
 https://www.dropbox.com/developers/core/sdks/python
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 import sys
 import io
@@ -167,8 +167,8 @@ class RESTClientObject(object):
 
         # In the python 3, the response.data is bytes.
         # we need to decode it to string.
-        if sys.version_info > (3,):
-            r.data = r.data.decode('utf8')
+        #if sys.version_info > (3,):
+        r.data = r.data.decode('utf8')
 
         # log response body
         logger.debug("response body: %s" % r.data)
