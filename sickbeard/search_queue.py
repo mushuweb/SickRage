@@ -18,16 +18,18 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
+import threading
 import time
 import traceback
-import threading
+
 import sickbeard
 from sickbeard import common
-from sickbeard import logger
+from sickbeard import failed_history, history
 from sickbeard import generic_queue
-from sickbeard import search, failed_history, history
-from sickbeard import ui
+from sickbeard import logger
 from sickbeard import providers
+from sickbeard import ui
+from sickbeard.search import core
 
 search_queue_lock = threading.Lock()
 
@@ -245,7 +247,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             logger.log(u"Beginning daily search for new episodes")
-            found_results = search.searchForNeededEpisodes()
+            found_results = core.searchForNeededEpisodes()
 
             if not found_results:
                 logger.log(u"No needed episodes found")
@@ -257,7 +259,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                                    result.seeders, result.leechers, result.provider.name))
                     else:
                         logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                    self.success = search.snatchEpisode(result)
+                    self.success = core.snatchEpisode(result)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
@@ -312,8 +314,8 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                        format(('forced', 'manual')[bool(self.manual_search)],
                               ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
 
-            search_result = search.searchProviders(self.show, self.segment, True, self.downCurQuality,
-                                                   self.manual_search, self.manual_search_type)
+            search_result = core.searchProviders(self.show, self.segment, True, self.downCurQuality,
+                                                 self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
@@ -323,7 +325,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                                       search_result[0].seeders, search_result[0].leechers, search_result[0].provider.name))
                 else:
                     logger.log(u"Downloading {0} from {1}".format(search_result[0].name, search_result[0].provider.name))
-                self.success = search.snatchEpisode(search_result[0])
+                self.success = core.snatchEpisode(search_result[0])
 
                 # give the CPU a break
                 time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
@@ -408,7 +410,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
                                       search_result.seeders, search_result.leechers, search_result.provider.name))
                 else:
                     logger.log(u"Downloading {0} from {1}".format(search_result.name, search_result.provider.name))
-                self.success = search.snatchEpisode(search_result)
+                self.success = core.snatchEpisode(search_result)
             else:
                 logger.log(u"Unable to snatch release: {0}".format(search_result.name))
 
@@ -449,7 +451,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                search_result = search.searchProviders(self.show, self.segment, False, False)
+                search_result = core.searchProviders(self.show, self.segment, False, False)
 
                 if search_result:
                     for result in search_result:
@@ -460,7 +462,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
                                               result.seeders, result.leechers, result.provider.name))
                         else:
                             logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                        self.success = search.snatchEpisode(result)
+                        self.success = core.snatchEpisode(result)
 
                         # give the CPU a break
                         time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
@@ -514,7 +516,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
             # If it is wanted, self.downCurQuality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = search.searchProviders(self.show, self.segment, True, False, False)
+            search_result = core.searchProviders(self.show, self.segment, True, False, False)
 
             if search_result:
                 for result in search_result:
@@ -524,7 +526,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                                    result.seeders, result.leechers, result.provider.name))
                     else:
                         logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                    self.success = search.snatchEpisode(result)
+                    self.success = core.snatchEpisode(result)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[sickbeard.CPU_PRESET])
