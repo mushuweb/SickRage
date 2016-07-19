@@ -43,7 +43,7 @@ from sickbeard import providers
 from sickbeard import scheduler
 from sickbeard import search_queue
 from sickbeard import (
-    showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
+    showUpdater, versionChecker, proper, auto_postprocessor, subtitles, traktChecker,
 )
 from sickbeard import show_queue
 from sickbeard.common import SD
@@ -60,7 +60,7 @@ from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_
     indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
 from sickbeard.providers.newznab import NewznabProvider
 from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.search import backlog, daily
+from sickbeard.search import backlog, daily, proper
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
@@ -1422,7 +1422,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             update_interval = datetime.timedelta(hours=1)
             run_at = datetime.time(hour=1)  # 1 AM
 
-        properFinderScheduler = scheduler.Scheduler(properFinder.ProperFinder(),
+        properFinderScheduler = scheduler.Scheduler(proper.ProperFinder(),
                                                     cycleTime=update_interval,
                                                     threadName="FINDPROPERS",
                                                     start_time=run_at,
