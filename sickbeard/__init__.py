@@ -33,7 +33,7 @@ import shutil_custom
 from configobj import ConfigObj
 from github import Github
 
-from sickbeard import dailysearcher
+from sickbeard import daily
 from sickbeard import db
 from sickbeard import helpers
 from sickbeard import logger
@@ -60,7 +60,7 @@ from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_
     indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
 from sickbeard.providers.newznab import NewznabProvider
 from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.search import backlog
+from sickbeard.search import backlog, daily
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
@@ -1403,7 +1403,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # TODO: update_interval should take last daily/backlog times into account!
         update_interval = datetime.timedelta(minutes=DAILYSEARCH_FREQUENCY)
-        dailySearchScheduler = scheduler.Scheduler(dailysearcher.DailySearcher(),
+        dailySearchScheduler = scheduler.Scheduler(daily.DailySearcher(),
                                                    cycleTime=update_interval,
                                                    threadName="DAILYSEARCHER",
                                                    run_delay=update_interval)
