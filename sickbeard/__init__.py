@@ -19,55 +19,52 @@
 # pylint: disable=too-many-lines
 
 import datetime
-import socket
 import os
-import re
 import os.path
-import shutil
-import shutil_custom
 import random
-
-from threading import Lock
+import re
+import shutil
+import socket
 import sys
+from threading import Lock
 
+import requests
+import shutil_custom
+from configobj import ConfigObj
 from github import Github
 
+from sickbeard import dailysearcher
+from sickbeard import db
+from sickbeard import helpers
+from sickbeard import logger
 from sickbeard import metadata
+from sickbeard import naming
 from sickbeard import providers
+from sickbeard import scheduler
+from sickbeard import search_queue
+from sickbeard import (
+    showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
+)
+from sickbeard import show_queue
+from sickbeard.common import SD
+from sickbeard.common import SKIPPED
+from sickbeard.common import WANTED
 from sickbeard.config import (
     CheckSection, ConfigMigrator,
     check_provider_setting, check_setting_int, check_setting_bool, check_setting_str, check_setting_float,
     load_provider_setting, save_provider_setting
 )
-from sickbeard import (
-    searchBacklog, showUpdater, versionChecker, properFinder, auto_postprocessor, subtitles, traktChecker,
-)
-from sickbeard import db
-from sickbeard import helpers
-from sickbeard import scheduler
-from sickbeard import search_queue
-from sickbeard import show_queue
-from sickbeard import logger
-from sickbeard import naming
-from sickbeard import dailysearcher
+from sickbeard.databases import main_db, cache_db, failed_db
 from sickbeard.indexers import indexer_api
 from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_showincomplete, indexer_exception, \
     indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
-from sickbeard.common import SD
-from sickbeard.common import SKIPPED
-from sickbeard.common import WANTED
-from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.databases import main_db, cache_db, failed_db
 from sickbeard.providers.newznab import NewznabProvider
-
+from sickbeard.providers.rsstorrent import TorrentRssProvider
+from sickbeard.search import backlog
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
 from sickrage.system.Shutdown import Shutdown
-
-from configobj import ConfigObj
-
-import requests
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -1412,10 +1409,10 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                    run_delay=update_interval)
 
         update_interval = datetime.timedelta(minutes=BACKLOG_FREQUENCY)
-        backlogSearchScheduler = searchBacklog.BacklogSearchScheduler(searchBacklog.BacklogSearcher(),
-                                                                      cycleTime=update_interval,
-                                                                      threadName="BACKLOG",
-                                                                      run_delay=update_interval)
+        backlogSearchScheduler = backlog.BacklogSearchScheduler(backlog.BacklogSearcher(),
+                                                                cycleTime=update_interval,
+                                                                threadName="BACKLOG",
+                                                                run_delay=update_interval)
 
         search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
         if CHECK_PROPERS_INTERVAL in search_intervals:
