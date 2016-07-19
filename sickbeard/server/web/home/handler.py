@@ -3,10 +3,10 @@
 from __future__ import unicode_literals
 
 import ast
-from datetime import date
 import json
 import os
 import time
+from datetime import date
 
 import adba
 from libtrakt import TraktAPI
@@ -25,10 +25,6 @@ from sickbeard.common import (
     cpu_presets, Overview, Quality, statusStrings,
     UNAIRED, IGNORED, WANTED, FAILED, SKIPPED
 )
-from sickbeard.manual_search import (
-    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
-)
 from sickbeard.scene_exceptions import (
     get_scene_exceptions,
     get_all_scene_exceptions,
@@ -40,9 +36,12 @@ from sickbeard.scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering,
 )
-from sickbeard.versionChecker import CheckVersion
+from sickbeard.search.manual import (
+    collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
+    SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
+)
 from sickbeard.server.web.core import WebRoot, PageTemplate
-
+from sickbeard.versionChecker import CheckVersion
 from sickrage.helper.common import (
     try_int, enabled_providers,
 )
@@ -51,7 +50,6 @@ from sickrage.helper.exceptions import (
     ex,
     CantRefreshShowException,
     CantUpdateShowException,
-    NoNFOException,
     ShowDirectoryNotFoundException,
 )
 from sickrage.show.Show import Show
