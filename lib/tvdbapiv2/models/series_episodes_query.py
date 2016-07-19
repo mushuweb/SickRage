@@ -38,7 +38,7 @@ class SeriesEpisodesQuery(object):
         """
         self.swagger_types = {
             'links': 'Links',
-            'data': 'list[BasicEpisode]'
+            'data': 'list[Episode]'
         }
 
         self.attribute_map = {

@@ -369,7 +369,6 @@ class SeriesApi(object):
 
     def series_id_episodes_query_get(self, id, **kwargs):
         """
-        
         This route allows the user to query against episodes for the given series. The response is a paginated array of episode records that have been filtered down to basic information.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -472,7 +471,6 @@ class SeriesApi(object):
 
     def series_id_episodes_query_params_get(self, id, **kwargs):
         """
-        
         Returns the allowed query keys for the `/series/{id}/episodes/query` route
 
         This method makes a synchronous HTTP request by default. To make an
@@ -551,7 +549,6 @@ class SeriesApi(object):
 
     def series_id_episodes_summary_get(self, id, **kwargs):
         """
-        
         Returns a summary of the episodes and seasons available for the series.\n\n__Note__: Season \"0\" is for all episodes that are considered to be specials.
 
         This method makes a synchronous HTTP request by default. To make an
