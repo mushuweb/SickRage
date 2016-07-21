@@ -20,12 +20,12 @@
 
 from __future__ import unicode_literals
 
+import threading
 from datetime import (
     date,
     datetime,
     timedelta,
 )
-import threading
 
 import sickbeard
 from sickbeard import (
@@ -39,10 +39,10 @@ from sickbeard.network_timezones import (
     sb_timezone,
     parse_date_time,
 )
-from sickbeard.search_queue import DailySearchQueueItem
-from sickrage.show.Show import Show
-from sickrage.helper.exceptions import MultipleShowObjectsException
+from sickbeard.search.queue import DailySearchQueueItem
 from sickrage.helper.common import try_int
+from sickrage.helper.exceptions import MultipleShowObjectsException
+from sickrage.show.Show import Show
 
 
 class DailySearcher(object):  # pylint:disable=too-few-public-methods

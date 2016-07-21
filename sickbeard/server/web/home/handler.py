@@ -17,8 +17,7 @@ from tornado.routes import route
 import sickbeard
 from sickbeard import (
     clients, config, db, helpers, logger,
-    notifiers, sab, search_queue,
-    subtitles, ui, show_name_helpers,
+    notifiers, sab, subtitles, ui, show_name_helpers,
 )
 from sickbeard.blackandwhitelist import BlackAndWhiteList, short_group_names
 from sickbeard.common import (
@@ -36,6 +35,7 @@ from sickbeard.scene_numbering import (
     get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
     set_scene_numbering,
 )
+from sickbeard.search import queue
 from sickbeard.search.manual import (
     collectEpisodesFromSearchThread, get_provider_cache_results, getEpisode, update_finished_search_queue_item,
     SEARCH_STATUS_FINISHED, SEARCH_STATUS_SEARCHING, SEARCH_STATUS_QUEUED,
@@ -952,7 +952,7 @@ class Home(WebRoot):
                 ep_objs.append(show_obj.get_episode(int(cached_result[b'season']), int(episode)))
 
         # Create the queue item
-        snatch_queue_item = search_queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
+        snatch_queue_item = queue.ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
 
         # Add the queue item to the queue
         sickbeard.manualSnatchScheduler.action.add_item(snatch_queue_item)
@@ -1726,7 +1726,7 @@ class Home(WebRoot):
             msg += '<ul>'
 
             for season, segment in iteritems(segments):
-                cur_backlog_queue_item = search_queue.BacklogQueueItem(show_obj, segment)
+                cur_backlog_queue_item = queue.BacklogQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
@@ -1748,7 +1748,7 @@ class Home(WebRoot):
             msg += '<ul>'
 
             for season, segment in iteritems(segments):
-                cur_failed_queue_item = search_queue.FailedQueueItem(show_obj, segment)
+                cur_failed_queue_item = queue.FailedQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_failed_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
@@ -1875,7 +1875,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
 
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
@@ -2030,7 +2030,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
+        ep_queue_item = queue.FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:

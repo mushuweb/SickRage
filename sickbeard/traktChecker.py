@@ -17,19 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import os
 import traceback
-import datetime
-from libtrakt.exceptions import traktException # pylint: disable=import-error
+
 from libtrakt import TraktAPI # pylint: disable=import-error
+from libtrakt.exceptions import traktException # pylint: disable=import-error
 
 import sickbeard
-from sickbeard import logger
-from sickbeard import helpers
-from sickbeard import search_queue
 from sickbeard import db
+from sickbeard import helpers
+from sickbeard import logger
 from sickbeard.common import SKIPPED, UNKNOWN, WANTED, Quality
-
+from sickbeard.search import queue
 from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
@@ -54,7 +54,7 @@ def setEpisodeToWanted(show, s, e):
             ep_obj.status = WANTED
             ep_obj.save_to_db()
 
-        cur_backlog_queue_item = search_queue.BacklogQueueItem(show, [ep_obj])
+        cur_backlog_queue_item = queue.BacklogQueueItem(show, [ep_obj])
         sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log(u"Starting backlog search for {show} {ep} because some episodes were set to wanted".format

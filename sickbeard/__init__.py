@@ -41,7 +41,7 @@ from sickbeard import metadata
 from sickbeard import naming
 from sickbeard import providers
 from sickbeard import scheduler
-from sickbeard import search_queue
+from sickbeard import queue
 from sickbeard import (
     showUpdater, versionChecker, proper, auto_postprocessor, subtitles, traktChecker,
 )
@@ -60,7 +60,7 @@ from sickbeard.indexers.indexer_exceptions import indexer_shownotfound, indexer_
     indexer_error, indexer_episodenotfound, indexer_attributenotfound, indexer_seasonnotfound, indexer_userabort
 from sickbeard.providers.newznab import NewznabProvider
 from sickbeard.providers.rsstorrent import TorrentRssProvider
-from sickbeard.search import backlog, daily, proper
+from sickbeard.search import backlog, daily, proper, queue
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
 from sickrage.providers.GenericProvider import GenericProvider
@@ -1389,15 +1389,15 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
 
         # snatcher used for manual search, manual picked results
-        manualSnatchScheduler = scheduler.Scheduler(search_queue.SnatchQueue(),
+        manualSnatchScheduler = scheduler.Scheduler(queue.SnatchQueue(),
                                                     cycleTime=datetime.timedelta(seconds=3),
                                                     threadName="MANUALSNATCHQUEUE")
         # searchers
-        searchQueueScheduler = scheduler.Scheduler(search_queue.SearchQueue(),
+        searchQueueScheduler = scheduler.Scheduler(queue.SearchQueue(),
                                                    cycleTime=datetime.timedelta(seconds=3),
                                                    threadName="SEARCHQUEUE")
 
-        forcedSearchQueueScheduler = scheduler.Scheduler(search_queue.ForcedSearchQueue(),
+        forcedSearchQueueScheduler = scheduler.Scheduler(queue.ForcedSearchQueue(),
                                                          cycleTime=datetime.timedelta(seconds=3),
                                                          threadName="FORCEDSEARCHQUEUE")
 

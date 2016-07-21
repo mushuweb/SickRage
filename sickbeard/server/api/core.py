@@ -23,14 +23,14 @@
 # pylint: disable=line-too-long,too-many-lines,abstract-method
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
 
-from collections import OrderedDict
-from datetime import datetime, date
 import io
 import json
 import os
 import re
 import time
 import traceback
+from collections import OrderedDict
+from datetime import datetime, date
 
 from requests.compat import unquote_plus
 from six import iteritems, text_type
@@ -39,15 +39,15 @@ from tornado.web import RequestHandler
 import sickbeard
 from sickbeard import (
     classes, db, helpers, image_cache, logger, network_timezones,
-    processTV, sbdatetime, search_queue, ui,
+    processTV, sbdatetime, ui,
 )
 from sickbeard.common import (
     Overview, Quality, statusStrings,
     ARCHIVED, DOWNLOADED, FAILED, IGNORED, SKIPPED, SNATCHED, SNATCHED_PROPER,
     UNAIRED, UNKNOWN, WANTED,
 )
+from sickbeard.search import queue
 from sickbeard.versionChecker import CheckVersion
-
 from sickrage.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
@@ -59,16 +59,15 @@ from sickrage.helper.exceptions import (
     ShowDirectoryNotFoundException,
 )
 from sickrage.helper.quality import get_quality_string
+from sickrage.media.ShowBanner import ShowBanner
 from sickrage.media.ShowFanArt import ShowFanArt
 from sickrage.media.ShowNetworkLogo import ShowNetworkLogo
 from sickrage.media.ShowPoster import ShowPoster
-from sickrage.media.ShowBanner import ShowBanner
 from sickrage.show.ComingEpisodes import ComingEpisodes
 from sickrage.show.History import History
 from sickrage.show.Show import Show
 from sickrage.system.Restart import Restart
 from sickrage.system.Shutdown import Shutdown
-
 
 indexer_ids = ["indexerid", "tvdbid"]
 
@@ -783,7 +782,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg="Episode not found")
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = queue.ForcedSearchQueueItem(show_obj, [ep_obj])
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -903,7 +902,7 @@ class CMD_EpisodeSetStatus(ApiCall):
         extra_msg = ""
         if start_backlog:
             for season, segment in iteritems(segments):
-                cur_backlog_queue_item = search_queue.BacklogQueueItem(show_obj, segment)
+                cur_backlog_queue_item = queue.BacklogQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
 
                 logger.log(u"API :: Starting backlog for " + show_obj.name + " season " + str(

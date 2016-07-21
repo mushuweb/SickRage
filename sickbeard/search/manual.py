@@ -19,14 +19,15 @@
 # along with SickRage. If not, see <http://www.gnu.org/licenses/>.
 
 
-import time
-import sickbeard
-import threading
 import json
-from sickbeard import search_queue
-from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
+import threading
+import time
+
+import sickbeard
 from sickbeard import logger, db
-from sickrage.helper.common import try_int, enabled_providers
+from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
+from sickbeard.search import queue
+from sickrage.helper.common import enabled_providers
 from sickrage.show.Show import Show
 
 SEARCH_STATUS_FINISHED = "finished"
@@ -118,11 +119,11 @@ def update_finished_search_queue_item(snatch_queue_item):
     """
     # Finished Searches
 
-    for search_thread in sickbeard.search_queue.FORCED_SEARCH_HISTORY:
+    for search_thread in sickbeard.search.queue.FORCED_SEARCH_HISTORY:
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
-        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+        if isinstance(search_thread, sickbeard.search.queue.ForcedSearchQueueItem):
             if not isinstance(search_thread.segment, list):
                 search_thread.segment = [search_thread.segment]
 
@@ -160,11 +161,11 @@ def collectEpisodesFromSearchThread(show):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in sickbeard.search_queue.FORCED_SEARCH_HISTORY:
+    for search_thread in sickbeard.search.queue.FORCED_SEARCH_HISTORY:
         if show and not search_thread.show.indexerid == int(show):
             continue
 
-        if isinstance(search_thread, sickbeard.search_queue.ForcedSearchQueueItem):
+        if isinstance(search_thread, sickbeard.search.queue.ForcedSearchQueueItem):
             if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += getEpisodes(search_thread, searchstatus)
         else:
@@ -258,7 +259,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = search_queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 
