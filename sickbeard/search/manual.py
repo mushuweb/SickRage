@@ -25,8 +25,8 @@ import time
 
 import sickbeard
 from sickbeard import logger, db
+from sickbeard.search.queue import ForcedSearchQueueItem
 from sickbeard.common import Quality, Overview, statusStrings, cpu_presets
-from sickbeard.search import queue
 from sickrage.helper.common import enabled_providers
 from sickrage.show.Show import Show
 
@@ -123,7 +123,7 @@ def update_finished_search_queue_item(snatch_queue_item):
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
-        if isinstance(search_thread, sickbeard.search.queue.ForcedSearchQueueItem):
+        if isinstance(search_thread, ForcedSearchQueueItem):
             if not isinstance(search_thread.segment, list):
                 search_thread.segment = [search_thread.segment]
 
@@ -165,7 +165,7 @@ def collectEpisodesFromSearchThread(show):
         if show and not search_thread.show.indexerid == int(show):
             continue
 
-        if isinstance(search_thread, sickbeard.search.queue.ForcedSearchQueueItem):
+        if isinstance(search_thread, ForcedSearchQueueItem):
             if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
                 episodes += getEpisodes(search_thread, searchstatus)
         else:
@@ -259,7 +259,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = queue.ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
 

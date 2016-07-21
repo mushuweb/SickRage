@@ -29,7 +29,7 @@ from sickbeard import db
 from sickbeard import helpers
 from sickbeard import logger
 from sickbeard.common import SKIPPED, UNKNOWN, WANTED, Quality
-from sickbeard.search import queue
+from sickbeard.search.queue import BacklogQueueItem
 from sickrage.helper.common import episode_num
 from sickrage.helper.encoding import ek
 from sickrage.helper.exceptions import ex
@@ -54,7 +54,7 @@ def setEpisodeToWanted(show, s, e):
             ep_obj.status = WANTED
             ep_obj.save_to_db()
 
-        cur_backlog_queue_item = queue.BacklogQueueItem(show, [ep_obj])
+        cur_backlog_queue_item = BacklogQueueItem(show, [ep_obj])
         sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log(u"Starting backlog search for {show} {ep} because some episodes were set to wanted".format

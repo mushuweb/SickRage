@@ -46,7 +46,7 @@ from sickbeard.common import (
     ARCHIVED, DOWNLOADED, FAILED, IGNORED, SKIPPED, SNATCHED, SNATCHED_PROPER,
     UNAIRED, UNKNOWN, WANTED,
 )
-from sickbeard.search import queue
+from sickbeard.search.queue import BacklogQueueItem, ForcedSearchQueueItem
 from sickbeard.versionChecker import CheckVersion
 from sickrage.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
@@ -782,7 +782,7 @@ class CMD_EpisodeSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg="Episode not found")
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = queue.ForcedSearchQueueItem(show_obj, [ep_obj])
+        ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
         sickbeard.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
@@ -902,7 +902,7 @@ class CMD_EpisodeSetStatus(ApiCall):
         extra_msg = ""
         if start_backlog:
             for season, segment in iteritems(segments):
-                cur_backlog_queue_item = queue.BacklogQueueItem(show_obj, segment)
+                cur_backlog_queue_item = BacklogQueueItem(show_obj, segment)
                 sickbeard.searchQueueScheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
 
                 logger.log(u"API :: Starting backlog for " + show_obj.name + " season " + str(
