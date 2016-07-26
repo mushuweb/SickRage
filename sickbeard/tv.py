@@ -1266,7 +1266,7 @@ class TVShow(TVObject):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
-            b'  season, episode, location '
+            b'  season, episode, location, status '
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
@@ -1278,6 +1278,7 @@ class TVShow(TVObject):
             cur_loc = ek(os.path.normpath, ep[b'location'])
             season = int(ep[b'season'])
             episode = int(ep[b'episode'])
+            cur_status = int(ep[b'status'])
 
             try:
                 cur_ep = self.get_episode(season, episode)
@@ -1292,16 +1293,21 @@ class TVShow(TVObject):
             if not ek(os.path.isfile, cur_loc) or not ek(os.path.normpath, cur_loc).startswith(
                     ek(os.path.normpath, self.location)):
 
+                logger.log("Database cur_loc: {0} and cur_status: {1}".format(cur_loc, cur_status), logger.WARNING)
+                logger.log("cur_ep: {0}".format(str(cur_ep)), logger.WARNING)
+            
                 # check if downloaded files still exist, update our data if this has changed
                 if not sickbeard.SKIP_REMOVED_FILES:
                     with cur_ep.lock:
                         # if it used to have a file associated with it and it doesn't anymore then
                         # set it to sickbeard.EP_DEFAULT_DELETED_STATUS
+                        logger.log("cur_ep.location: {0} and cur_ep.status: {1}".format(cur_ep.location, cur_ep.status), logger.WARNING)
                         if cur_ep.location and cur_ep.status in Quality.DOWNLOADED:
 
                             if sickbeard.EP_DEFAULT_DELETED_STATUS == ARCHIVED:
                                 _, old_quality = Quality.splitCompositeStatus(cur_ep.status)
                                 new_status = Quality.compositeStatus(ARCHIVED, old_quality)
+                                logger.log("old_quality: {0} and new_status: {1}".format(old_quality, new_status), logger.WARNING)
                             else:
                                 new_status = sickbeard.EP_DEFAULT_DELETED_STATUS
 
