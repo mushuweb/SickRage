@@ -80,7 +80,7 @@
                                 <label>
                                     <span class="component-title">Daily search frequency</span>
                                     <span class="component-desc">
-                                        <input type="number" min="10" step="1" name="dailysearch_frequency" value="${sickbeard.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75"/>
+                                        <input type="number" min="5" step="1" name="dailysearch_frequency" value="${sickbeard.DAILYSEARCH_FREQUENCY}" class="form-control input-sm input75"/>
                                         <p>time in minutes between searches (min. ${sickbeard.MIN_DAILYSEARCH_FREQUENCY})</p>
                                         </span>
                                 </label>
