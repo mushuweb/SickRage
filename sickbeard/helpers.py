@@ -50,7 +50,7 @@ from contextlib2 import suppress, closing
 import requests
 from requests.compat import urlparse
 import shutil_custom
-from six import iteritems, text_type
+from six import iteritems, string_types, text_type
 from six.moves import http_client
 
 import sickbeard
@@ -1760,3 +1760,44 @@ def is_ip_private(ip):
     priv_20 = re.compile(r"^192\.168\.\d{1,3}.\d{1,3}$")
     priv_16 = re.compile(r"^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
     return priv_lo.match(ip) or priv_24.match(ip) or priv_20.match(ip) or priv_16.match(ip)
+
+
+def unicodify(value):
+    """Return the value as unicode.
+
+    :param value:
+    :type value: str
+    :return:
+    :rtype: str
+    """
+    if isinstance(value, string_types) and not isinstance(value, text_type):
+        return text_type(value, 'utf-8', 'replace')
+
+    return value
+
+
+def single_or_list(value, allow_multi):
+    """Return a single value or a list.
+
+    If value is a list with more than one element and allow_multi is False then it returns None.
+    :param value:
+    :type value: list
+    :param allow_multi: if False, multiple values will return None
+    :type allow_multi: bool
+    :rtype: list or str or int
+    """
+    if not isinstance(value, list):
+        return value
+
+    if allow_multi:
+        return sorted(value)
+
+
+def ensure_list(value):
+    """Return a list.
+
+    When value is not a list, return a list containing the single value.
+    :param value:
+    :rtype: list
+    """
+    return sorted(value) if isinstance(value, list) else [value] if value is not None else []
